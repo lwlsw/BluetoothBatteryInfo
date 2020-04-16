@@ -3,6 +3,7 @@
 - (long long)percentCharge;
 - (BOOL)isBatterySaverModeActive;
 - (BOOL)isCharging;
+- (NSString*)identifier;
 @end
 
 @interface BCBatteryDeviceController: NSObject
@@ -18,9 +19,12 @@
     UILabel *deviceNameLabel;
     BOOL useOriginalGlyph;
     BCBatteryDevice *currentDevice;
+    NSString *currentDeviceIdentifier;
     UIColor *backupColor;
 }
 - (id)init;
+- (void)updateLabelsSize;
+- (void)updateGlyphSize;
 - (void)updateLabelProperties;
 - (void)updatePercentage;
 - (void)updatePercentageColor;

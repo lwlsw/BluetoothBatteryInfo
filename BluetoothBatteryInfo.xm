@@ -24,6 +24,8 @@ static BOOL enabled;
 static BOOL showOnLockScreen;
 static BOOL hideInternalBattery;
 static BOOL changeHeadphonesIcon;
+static BOOL hideDeviceNameLabel;
+static long glyphSize;
 static long percentageFontSize;
 static BOOL percentageFontBold;
 static long nameFontSize;
@@ -73,29 +75,29 @@ static void loadDeviceScreenDimensions()
 				[bluetoothBatteryInfoWindow setUserInteractionEnabled: YES];
 				[[bluetoothBatteryInfoWindow layer] setAnchorPoint: CGPointZero];
 
-				glyphImageView = [[UIImageView alloc] initWithFrame: CGRectMake(0, 0, WINDOW_HEIGHT, WINDOW_HEIGHT)];
+				glyphImageView = [[UIImageView alloc] initWithFrame: CGRectMake(0, WINDOW_HEIGHT / 2 - glyphSize / 2, glyphSize, glyphSize)];
 				[glyphImageView setContentMode: UIViewContentModeScaleAspectFit];
 				[glyphImageView setUserInteractionEnabled: YES];
 				[bluetoothBatteryInfoWindow addSubview: glyphImageView];
 				
-				percentageLabel = [[UILabel alloc] initWithFrame: CGRectMake(WINDOW_HEIGHT + 3, 0, LABEL_WIDTH, WINDOW_HEIGHT / 2)];
+				percentageLabel = [[UILabel alloc] initWithFrame: CGRectMake(glyphSize + 3, 0, LABEL_WIDTH, WINDOW_HEIGHT / 2)];
 				[percentageLabel setNumberOfLines: 1];
 				[percentageLabel setTextAlignment: NSTextAlignmentLeft];
 				[percentageLabel setUserInteractionEnabled: YES];
 				[bluetoothBatteryInfoWindow addSubview: percentageLabel];
 
-				deviceNameLabel = [[UILabel alloc] initWithFrame: CGRectMake(WINDOW_HEIGHT + 3, WINDOW_HEIGHT / 2, LABEL_WIDTH, WINDOW_HEIGHT / 2)];
+				deviceNameLabel = [[UILabel alloc] initWithFrame: CGRectMake(glyphSize + 3, WINDOW_HEIGHT / 2, LABEL_WIDTH, WINDOW_HEIGHT / 2)];
 				[deviceNameLabel setNumberOfLines: 1];
 				[deviceNameLabel setTextAlignment: NSTextAlignmentLeft];
 				[deviceNameLabel setUserInteractionEnabled: YES];
 				[bluetoothBatteryInfoWindow addSubview: deviceNameLabel];
 
-				[bluetoothBatteryInfoWindow addGestureRecognizer: [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(nextDevice)]];
+				[bluetoothBatteryInfoWindow addGestureRecognizer: [[UITapGestureRecognizer alloc] initWithTarget: self action: @selector(updateDeviceWithEffects)]];
 
 				deviceIndex = 0;
 				useOriginalGlyph = YES;
 
-				[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(updateDevice) name: @"BCBatteryDeviceControllerConnectedDevicesDidChange" object: nil];
+				[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(updateDeviceWithoutEffects) name: @"BCBatteryDeviceControllerConnectedDevicesDidChange" object: nil];
 
 				[self updateFrame];
 
@@ -115,8 +117,11 @@ static void loadDeviceScreenDimensions()
 
 	- (void)_updateFrame
 	{
-		if(showOnLockScreen) [bluetoothBatteryInfoWindow setWindowLevel: 1050];
+		if(showOnLockScreen) [bluetoothBatteryInfoWindow setWindowLevel: 1051];
 		else [bluetoothBatteryInfoWindow setWindowLevel: 1000];
+		
+		[self updateGlyphSize];
+		[self updateLabelsSize];
 
 		[self updateLabelProperties];
 
@@ -129,8 +134,38 @@ static void loadDeviceScreenDimensions()
 		if(percentageFontBold) [percentageLabel setFont: [UIFont boldSystemFontOfSize: percentageFontSize]];
 		else [percentageLabel setFont: [UIFont systemFontOfSize: percentageFontSize]];
 		
-		if(nameFontBold) [deviceNameLabel setFont: [UIFont boldSystemFontOfSize: nameFontSize]];
-		else [deviceNameLabel setFont: [UIFont systemFontOfSize: nameFontSize]];
+		if(!hideDeviceNameLabel)
+		{
+			if(nameFontBold) [deviceNameLabel setFont: [UIFont boldSystemFontOfSize: nameFontSize]];
+			else [deviceNameLabel setFont: [UIFont systemFontOfSize: nameFontSize]];
+		}
+	}
+
+	- (void)updateGlyphSize
+	{
+		CGRect frame = [glyphImageView frame];
+		frame.origin.y = WINDOW_HEIGHT / 2 - glyphSize / 2;
+		frame.size.width = glyphSize;
+		frame.size.height = glyphSize;
+		[glyphImageView setFrame: frame];
+	}
+
+	- (void)updateLabelsSize
+	{
+		CGRect frame = [percentageLabel frame];
+		frame.origin.x = glyphSize + 3;
+		frame.size.height = hideDeviceNameLabel ? WINDOW_HEIGHT : WINDOW_HEIGHT / 2;
+		[percentageLabel setFrame: frame];
+
+		if(hideDeviceNameLabel) [deviceNameLabel setHidden: YES];
+		else
+		{
+			[deviceNameLabel setHidden: NO];
+
+			frame = [deviceNameLabel frame];
+			frame.origin.x = glyphSize + 3;
+			[deviceNameLabel setFrame: frame];
+		}
 	}
 
 	- (void)updateOrientation
@@ -193,15 +228,6 @@ static void loadDeviceScreenDimensions()
 		}
 	}
 
-	- (void)nextDevice
-	{
-		deviceIndex++;
-		if(deviceIndex > [[[%c(BCBatteryDeviceController) sharedInstance] connectedDevices] count] - 1)
-			deviceIndex = hideInternalBattery ? 1 : 0;
-
-		[self updateDevice];
-	}
-
 	- (void)updatePercentageColor
 	{
 		if(deviceIndex <= [[[%c(BCBatteryDeviceController) sharedInstance] connectedDevices] count] && currentDevice)
@@ -223,29 +249,123 @@ static void loadDeviceScreenDimensions()
 		}
 	}
 
-	- (void)updateDevice
+	- (void)updateDeviceWithEffects
 	{
 		NSArray *devices = [[%c(BCBatteryDeviceController) sharedInstance] connectedDevices];
-		if(hideInternalBattery && deviceIndex == 0) deviceIndex++;
+
+		deviceIndex++;
 		if(deviceIndex > [devices count] - 1) deviceIndex = hideInternalBattery ? 1 : 0;
-		if(deviceIndex > [devices count] - 1)
-		{
-			currentDevice = nil;
-			[glyphImageView setImage: nil];
-			[percentageLabel setText: @""];
-			[deviceNameLabel setText: @""];
-		}
+		if(deviceIndex > [devices count] - 1) [self resetDeviceValues];
 		else
 		{
 			currentDevice = devices[deviceIndex];
 
-			[glyphImageView setImage: [[currentDevice glyph] imageWithRenderingMode: UIImageRenderingModeAlwaysTemplate]];
-			if(useOriginalGlyph) [glyphImageView setTintColor: [UIColor whiteColor]];
-			else [glyphImageView setTintColor: [UIColor blackColor]];
+			if(currentDeviceIdentifier && [[currentDevice identifier] isEqualToString: currentDeviceIdentifier])
+			{
+				UINotificationFeedbackGenerator *gen = [[UINotificationFeedbackGenerator alloc] init];
+				[gen prepare];
 
-			[deviceNameLabel setText: [self getDeviceName: [currentDevice glyph].imageAsset.assetName]];
-			[self updatePercentage];
+				CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath: @"position"];
+				[animation setDuration: 0.08];
+				[animation setRepeatCount: 3];
+				[animation setAutoreverses: YES];
+				[animation setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x - 4, [bluetoothBatteryInfoWindow center].y)]];
+				[animation setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x + 4, [bluetoothBatteryInfoWindow center].y)]];
+				[[bluetoothBatteryInfoWindow layer] addAnimation: animation forKey: @"position"];
+
+				[gen notificationOccurred: UINotificationFeedbackTypeError];
+			}
+			else
+			{
+				UIImpactFeedbackGenerator *gen = [[UIImpactFeedbackGenerator alloc] initWithStyle: UIImpactFeedbackStyleMedium];
+				[gen prepare];
+
+				[CATransaction begin];
+				[CATransaction setAnimationDuration: 0.25];
+				[CATransaction setAnimationTimingFunction: [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut]];
+
+				[CATransaction setCompletionBlock:
+				^{
+					[self loadNewDeviceValues];
+
+					CABasicAnimation *positionAnimation2 = [CABasicAnimation animationWithKeyPath: @"position"];
+					[positionAnimation2 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x + 15, [bluetoothBatteryInfoWindow center].y)]];
+					[positionAnimation2 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
+					[positionAnimation2 setDuration: 0.25];
+					
+					CABasicAnimation *opacityAnimation2 = [CABasicAnimation animationWithKeyPath: @"opacity"];
+					[opacityAnimation2 setFromValue: [NSNumber numberWithFloat: 0]];
+					[opacityAnimation2 setToValue: [NSNumber numberWithFloat: 1]];
+					[opacityAnimation2 setDuration: 0.25];
+
+					CAAnimationGroup *animationGroup2 = [CAAnimationGroup animation];
+					[animationGroup2 setDuration: 0.25];
+					[animationGroup2 setTimingFunction: [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut]];
+					[animationGroup2 setAnimations: @[positionAnimation2, opacityAnimation2]];
+					[[bluetoothBatteryInfoWindow layer] addAnimation: animationGroup2 forKey: @"animationGroup2"];
+
+					[[bluetoothBatteryInfoWindow layer] removeAnimationForKey: @"animationGroup1"];
+				}];
+
+				CABasicAnimation *positionAnimation1 = [CABasicAnimation animationWithKeyPath: @"position"];
+				[positionAnimation1 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
+				[positionAnimation1 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x - 15, [bluetoothBatteryInfoWindow center].y)]];
+				[positionAnimation1 setDuration: 0.25];
+				
+				CABasicAnimation *opacityAnimation1 = [CABasicAnimation animationWithKeyPath: @"opacity"];
+				[opacityAnimation1 setFromValue: [NSNumber numberWithFloat: 1]];
+				[opacityAnimation1 setToValue: [NSNumber numberWithFloat: 0]];
+				[opacityAnimation1 setDuration: 0.25];
+
+				CAAnimationGroup *animationGroup1 = [CAAnimationGroup animation];
+				[animationGroup1 setDuration: 0.25];
+				[animationGroup1 setTimingFunction: [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut]];
+				[animationGroup1 setAnimations: @[positionAnimation1, opacityAnimation1]];
+				[animationGroup1 setFillMode: kCAFillModeForwards];
+				[animationGroup1 setRemovedOnCompletion: NO];
+				[[bluetoothBatteryInfoWindow layer] addAnimation: animationGroup1 forKey: @"animationGroup1"];
+
+				[CATransaction commit];
+				
+				[gen impactOccurred];
+			}
 		}
+	}
+
+	- (void)updateDeviceWithoutEffects
+	{
+		NSArray *devices = [[%c(BCBatteryDeviceController) sharedInstance] connectedDevices];
+		if(hideInternalBattery && deviceIndex == 0) deviceIndex++;
+		if(deviceIndex > [devices count] - 1) deviceIndex = hideInternalBattery ? 1 : 0;
+		if(deviceIndex > [devices count] - 1) [self resetDeviceValues];
+		else
+		{
+			currentDevice = devices[deviceIndex];
+
+			if(!currentDeviceIdentifier || ![[currentDevice identifier] isEqualToString: currentDeviceIdentifier])
+				[self loadNewDeviceValues];
+		}
+	}
+
+	- (void)loadNewDeviceValues
+	{
+		currentDeviceIdentifier = [currentDevice identifier];
+
+		[glyphImageView setImage: [[currentDevice glyph] imageWithRenderingMode: UIImageRenderingModeAlwaysTemplate]];
+		if(useOriginalGlyph) [glyphImageView setTintColor: [UIColor whiteColor]];
+		else [glyphImageView setTintColor: [UIColor blackColor]];
+
+		[deviceNameLabel setText: [self getDeviceName: [[[currentDevice glyph] imageAsset] assetName]]];
+		[self updatePercentage];
+	}
+
+	- (void)resetDeviceValues
+	{
+		currentDevice = nil;
+		currentDeviceIdentifier = nil;
+		[glyphImageView setImage: nil];
+		[percentageLabel setText: @""];
+		[deviceNameLabel setText: @""];
 	}
 
 	- (void)updateTextColor: (UIColor*)color
@@ -311,7 +431,7 @@ static void loadDeviceScreenDimensions()
 	if(!bluetoothBatteryInfoObject) 
 	{
 		bluetoothBatteryInfoObject = [[BluetoothBatteryInfo alloc] init];
-		[bluetoothBatteryInfoObject updateDevice];
+		[bluetoothBatteryInfoObject updateDeviceWithoutEffects];
 	}
 }
 
@@ -477,6 +597,8 @@ static void settingsChanged(CFNotificationCenterRef center, void *observer, CFSt
 	enabled = [pref boolForKey: @"enabled"];
 	showOnLockScreen = [pref boolForKey: @"showOnLockScreen"];
 	hideInternalBattery = [pref boolForKey: @"hideInternalBattery"];
+	hideDeviceNameLabel = [pref boolForKey: @"hideDeviceNameLabel"];
+	glyphSize = [pref integerForKey: @"glyphSize"];
 	percentageFontSize = [pref integerForKey: @"percentageFontSize"];
 	percentageFontBold = [pref boolForKey: @"percentageFontBold"];
 	nameFontSize = [pref integerForKey: @"nameFontSize"];
@@ -490,7 +612,7 @@ static void settingsChanged(CFNotificationCenterRef center, void *observer, CFSt
 	if(bluetoothBatteryInfoObject)
 	{
 		[bluetoothBatteryInfoObject updateFrame];
-		[bluetoothBatteryInfoObject updateDevice];
+		[bluetoothBatteryInfoObject updateDeviceWithoutEffects];
 	}
 }
 
@@ -505,6 +627,8 @@ static void settingsChanged(CFNotificationCenterRef center, void *observer, CFSt
 			@"showOnLockScreen": @NO,
 			@"hideInternalBattery": @NO,
 			@"changeHeadphonesIcon": @NO,
+			@"hideDeviceNameLabel": @NO,
+			@"glyphSize": @20,
 			@"percentageFontSize": @10,
 			@"percentageFontBold": @NO,
 			@"nameFontSize": @8,

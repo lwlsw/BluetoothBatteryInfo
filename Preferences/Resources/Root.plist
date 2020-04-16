@@ -24,7 +24,7 @@
         	<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>All Settings Below Except 'Dynamic Headphones Icon' Are Updated Dynamically And Do Not Require A Respring. Enabling / Disabling The Tweak Requires A Respring.</string>
+			<string>All Settings Below Except 'Dynamic Status Bar Icon' Are Updated Dynamically And Do Not Require A Respring. Enabling / Disabling The Tweak Requires A Respring.</string>
 			<key>footerAlignment</key>
 			<integer>1</integer>
         </dict>
@@ -39,6 +39,68 @@
 			<string>enabled</string>
 			<key>label</key>
 			<string>Enabled</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>DISPLAY OPTIONS</string>
+			<key>footerText</key>
+			<string>'Dynamic Status Bar Icon' Changes The Default Headphones Icon To The Icon Of The Connected Bluetooth Device In The Status Bar</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.johnzaro.bluetoothbatteryinfoprefs</string>
+			<key>key</key>
+			<string>showOnLockScreen</string>
+			<key>label</key>
+			<string>Show On Lock Screen</string>
+			<key>PostNotification</key>
+			<string>com.johnzaro.bluetoothbatteryinfoprefs/reloadprefs</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.johnzaro.bluetoothbatteryinfoprefs</string>
+			<key>key</key>
+			<string>hideInternalBattery</string>
+			<key>label</key>
+			<string>Hide Internal Battery</string>
+			<key>PostNotification</key>
+			<string>com.johnzaro.bluetoothbatteryinfoprefs/reloadprefs</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.johnzaro.bluetoothbatteryinfoprefs</string>
+			<key>key</key>
+			<string>hideDeviceNameLabel</string>
+			<key>label</key>
+			<string>Hide Device Name Label</string>
+			<key>PostNotification</key>
+			<string>com.johnzaro.bluetoothbatteryinfoprefs/reloadprefs</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.johnzaro.bluetoothbatteryinfoprefs</string>
+			<key>key</key>
+			<string>changeHeadphonesIcon</string>
+			<key>label</key>
+			<string>Dynamic Status Bar Icon</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -138,49 +200,33 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>DISPLAY OPTIONS</string>
-			<key>footerText</key>
-			<string>'DYNAMIC HEADPHONES ICON' CHANGES THE DEFAULT HEADPHONES ICON TO THE ICON OF THE CONNECTED BLUETOOTH DEVICE</string>
+			<string>Glyph Size</string>
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSSwitchCell</string>
+			<string>PSSegmentCell</string>
 			<key>default</key>
-			<false/>
+			<integer>2</integer>
 			<key>defaults</key>
 			<string>com.johnzaro.bluetoothbatteryinfoprefs</string>
 			<key>key</key>
-			<string>showOnLockScreen</string>
-			<key>label</key>
-			<string>Show On Lock Screen</string>
+			<string>glyphSize</string>
+			<key>validTitles</key>
+			<array>
+      			<string>16px</string>
+      			<string>20px</string>
+      			<string>24px</string>
+			</array>
+      		<key>validValues</key>
+			<array>
+      			<string>16</string>
+      			<string>20</string>
+      			<string>24</string>
+			</array>
+			<key>staticTextMessage</key>
+			<string>Glyph Size</string>
 			<key>PostNotification</key>
 			<string>com.johnzaro.bluetoothbatteryinfoprefs/reloadprefs</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<false/>
-			<key>defaults</key>
-			<string>com.johnzaro.bluetoothbatteryinfoprefs</string>
-			<key>key</key>
-			<string>hideInternalBattery</string>
-			<key>label</key>
-			<string>Hide Internal Battery</string>
-			<key>PostNotification</key>
-			<string>com.johnzaro.bluetoothbatteryinfoprefs/reloadprefs</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<false/>
-			<key>defaults</key>
-			<string>com.johnzaro.bluetoothbatteryinfoprefs</string>
-			<key>key</key>
-			<string>changeHeadphonesIcon</string>
-			<key>label</key>
-			<string>Dynamic Status Bar Icon</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -202,7 +248,7 @@
 			<key>singularLabel</key>
 			<string>Font: 1</string>
 			<key>max</key>
-			<real>12</real>
+			<real>15</real>
 			<key>min</key>
 			<real>5</real>
 			<key>PostNotification</key>
