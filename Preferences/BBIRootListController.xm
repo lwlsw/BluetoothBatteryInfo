@@ -86,6 +86,7 @@
 
             NSFileManager *manager = [NSFileManager defaultManager];
             [manager removeItemAtPath:@"/var/mobile/Library/Preferences/com.johnzaro.bluetoothbatteryinfoprefs.plist" error: nil];
+            [manager removeItemAtPath:@"/var/mobile/Library/Preferences/com.johnzaro.bluetoothbatteryinfoprefs.colors.plist" error: nil];
 
             [self respring];
         }];
