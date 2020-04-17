@@ -179,14 +179,14 @@ static void loadDeviceScreenDimensions()
 		}
 		else
 		{
-			UIDeviceOrientation orientation = [[UIApplication sharedApplication] _frontMostAppOrientation];
-			if(orientation == orientationOld)
+			deviceOrientation = [[UIApplication sharedApplication] _frontMostAppOrientation];
+			if(deviceOrientation == orientationOld)
 				return;
 			
 			CGAffineTransform newTransform;
 			CGRect frame = [bluetoothBatteryInfoWindow frame];
 
-			switch (orientation)
+			switch(deviceOrientation)
 			{
 				case UIDeviceOrientationLandscapeRight:
 				{
@@ -223,7 +223,7 @@ static void loadDeviceScreenDimensions()
 			^{
 				[bluetoothBatteryInfoWindow setTransform: newTransform];
 				[bluetoothBatteryInfoWindow setFrame: frame];
-				orientationOld = orientation;
+				orientationOld = deviceOrientation;
 			} completion: nil];
 		}
 	}
@@ -269,8 +269,16 @@ static void loadDeviceScreenDimensions()
 				[animation setDuration: 0.08];
 				[animation setRepeatCount: 3];
 				[animation setAutoreverses: YES];
-				[animation setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x - 4, [bluetoothBatteryInfoWindow center].y)]];
-				[animation setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x + 4, [bluetoothBatteryInfoWindow center].y)]];
+				if(deviceOrientation == UIDeviceOrientationPortrait || deviceOrientation == UIDeviceOrientationPortraitUpsideDown || !followDeviceOrientation)
+				{
+					[animation setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x - 4, [bluetoothBatteryInfoWindow center].y)]];
+					[animation setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x + 4, [bluetoothBatteryInfoWindow center].y)]];
+				}
+				else
+				{
+					[animation setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y - 4)]];
+					[animation setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y + 4)]];
+				}
 				[[bluetoothBatteryInfoWindow layer] addAnimation: animation forKey: @"position"];
 
 				[gen notificationOccurred: UINotificationFeedbackTypeError];
@@ -289,8 +297,26 @@ static void loadDeviceScreenDimensions()
 					[self loadNewDeviceValues];
 
 					CABasicAnimation *positionAnimation2 = [CABasicAnimation animationWithKeyPath: @"position"];
-					[positionAnimation2 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x + 15, [bluetoothBatteryInfoWindow center].y)]];
-					[positionAnimation2 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
+					if(deviceOrientation == UIDeviceOrientationPortrait || !followDeviceOrientation)
+					{
+						[positionAnimation2 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x + 15, [bluetoothBatteryInfoWindow center].y)]];
+						[positionAnimation2 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
+					}
+					else if(deviceOrientation == UIDeviceOrientationLandscapeLeft)
+					{
+						[positionAnimation2 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y + 15)]];
+						[positionAnimation2 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
+					}
+					else if(deviceOrientation == UIDeviceOrientationLandscapeRight)
+					{
+						[positionAnimation2 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y - 15)]];
+						[positionAnimation2 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
+					}
+					else
+					{
+						[positionAnimation2 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x - 15, [bluetoothBatteryInfoWindow center].y)]];
+						[positionAnimation2 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
+					}
 					[positionAnimation2 setDuration: 0.25];
 					
 					CABasicAnimation *opacityAnimation2 = [CABasicAnimation animationWithKeyPath: @"opacity"];
@@ -308,8 +334,26 @@ static void loadDeviceScreenDimensions()
 				}];
 
 				CABasicAnimation *positionAnimation1 = [CABasicAnimation animationWithKeyPath: @"position"];
-				[positionAnimation1 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
-				[positionAnimation1 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x - 15, [bluetoothBatteryInfoWindow center].y)]];
+				if(deviceOrientation == UIDeviceOrientationPortrait || !followDeviceOrientation)
+				{
+					[positionAnimation1 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
+					[positionAnimation1 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x - 15, [bluetoothBatteryInfoWindow center].y)]];
+				}
+				else if(deviceOrientation == UIDeviceOrientationLandscapeLeft)
+				{
+					[positionAnimation1 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
+					[positionAnimation1 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y - 15)]];
+				}
+				else if(deviceOrientation == UIDeviceOrientationLandscapeRight)
+				{
+					[positionAnimation1 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
+					[positionAnimation1 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y + 15)]];
+				}
+				else
+				{
+					[positionAnimation1 setFromValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x, [bluetoothBatteryInfoWindow center].y)]];
+					[positionAnimation1 setToValue: [NSValue valueWithCGPoint: CGPointMake([bluetoothBatteryInfoWindow center].x + 15, [bluetoothBatteryInfoWindow center].y)]];
+				}
 				[positionAnimation1 setDuration: 0.25];
 				
 				CABasicAnimation *opacityAnimation1 = [CABasicAnimation animationWithKeyPath: @"opacity"];

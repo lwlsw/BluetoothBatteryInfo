@@ -21,6 +21,7 @@
     BCBatteryDevice *currentDevice;
     NSString *currentDeviceIdentifier;
     UIColor *backupColor;
+    UIDeviceOrientation deviceOrientation;
 }
 - (id)init;
 - (void)updateLabelsSize;
