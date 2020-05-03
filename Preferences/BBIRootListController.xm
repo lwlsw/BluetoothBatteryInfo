@@ -1,4 +1,5 @@
 #import "BBIRootListController.h"
+#import "SparkAppListTableViewController.h"
 #import "spawn.h"
 
 @implementation BBIRootListController
@@ -73,6 +74,14 @@
 	return _specifiers;
 }
 
+- (void)selectBlackListedApps
+{
+    SparkAppListTableViewController *s = [[SparkAppListTableViewController alloc] initWithIdentifier: @"com.johnzaro.bluetoothbatteryinfoprefs.blackListedApps" andKey: @"blackListedApps"];
+
+    [self.navigationController pushViewController: s animated: YES];
+    self.navigationItem.hidesBackButton = FALSE;
+}
+
 - (void)reset: (PSSpecifier*)specifier
 {
     UIAlertController *reset = [UIAlertController
@@ -86,7 +95,7 @@
 
             NSFileManager *manager = [NSFileManager defaultManager];
             [manager removeItemAtPath:@"/var/mobile/Library/Preferences/com.johnzaro.bluetoothbatteryinfoprefs.plist" error: nil];
-            [manager removeItemAtPath:@"/var/mobile/Library/Preferences/com.johnzaro.bluetoothbatteryinfoprefs.colors.plist" error: nil];
+            [manager removeItemAtPath:@"/var/mobile/Library/Preferences/com.johnzaro.bluetoothbatteryinfoprefs.blackListedApps.plist" error: nil];
 
             [self respring];
         }];

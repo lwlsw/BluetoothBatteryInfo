@@ -32,6 +32,7 @@
 - (void)updateOrientation;
 - (void)updateFrame;
 - (void)updateTextColor: (UIColor*)color;
+- (void)setHidden:(BOOL)arg;
 @end
 
 @interface UIImageAsset ()
@@ -42,10 +43,19 @@
 - (void)_setSecure:(BOOL)arg1;
 @end
 
-@interface UIApplication ()
-- (UIDeviceOrientation)_frontMostAppOrientation;
+@interface SBApplication: NSObject
+-(NSString*)bundleIdentifier;
 @end
 
+@interface SpringBoard: UIApplication
+- (id)_accessibilityFrontMostApplication;
+-(void)frontDisplayDidChange: (id)arg1;
+@end
+
+@interface UIApplication ()
+- (UIDeviceOrientation)_frontMostAppOrientation;
+- (BOOL)launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2;
+@end
 @interface _UIStatusBarStyleAttributes: NSObject
 @property(nonatomic, copy) UIColor *imageTintColor;
 @end

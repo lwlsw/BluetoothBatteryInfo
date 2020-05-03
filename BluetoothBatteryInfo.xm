@@ -1,5 +1,5 @@
 #import "BluetoothBatteryInfo.h"
-
+#import "SparkAppList.h"
 #import <Cephei/HBPreferences.h>
 
 #define DegreesToRadians(degrees) (degrees * M_PI / 180)
@@ -35,6 +35,10 @@ static double portraitY;
 static double landscapeX;
 static double landscapeY;
 static BOOL followDeviceOrientation;
+static BOOL enableBlackListedApps;
+static NSArray *blackListedApps;
+
+static BOOL isBlacklistedAppInFront = NO;
 
 static unsigned int deviceIndex;
 
@@ -441,6 +445,11 @@ static void loadDeviceScreenDimensions()
 		}
 	}
 
+	- (void)setHidden: (BOOL)arg
+	{
+		[bluetoothBatteryInfoWindow setHidden: arg];
+	}
+
 	- (NSString*)getDeviceName: (NSString*)assetName
 	{
 		if([assetName containsString: @"case"] || [assetName containsString: @"r7x"]) return @"Case";
@@ -477,6 +486,32 @@ static void loadDeviceScreenDimensions()
 		bluetoothBatteryInfoObject = [[BluetoothBatteryInfo alloc] init];
 		[bluetoothBatteryInfoObject updateDeviceWithoutEffects];
 	}
+}
+
+-(void)frontDisplayDidChange: (id)arg1 
+{
+	%orig;
+
+	NSString *currentApp = [(SBApplication*)[self _accessibilityFrontMostApplication] bundleIdentifier];
+	isBlacklistedAppInFront = blackListedApps && currentApp && [blackListedApps containsObject: currentApp];
+
+	[bluetoothBatteryInfoObject setHidden: isBlacklistedAppInFront];
+}
+
+%end
+
+%hook SBCoverSheetPresentationManager
+
+-(BOOL)isPresented
+{
+	BOOL isPresented = %orig;
+
+	if(isPresented || !isBlacklistedAppInFront)
+		[bluetoothBatteryInfoObject setHidden: NO];
+	else
+		[bluetoothBatteryInfoObject setHidden: YES];
+
+	return isPresented;
 }
 
 %end
@@ -652,6 +687,12 @@ static void settingsChanged(CFNotificationCenterRef center, void *observer, CFSt
 	landscapeX = [pref floatForKey: @"landscapeX"];
 	landscapeY = [pref floatForKey: @"landscapeY"];
 	followDeviceOrientation = [pref boolForKey: @"followDeviceOrientation"];
+	enableBlackListedApps = [pref boolForKey: @"enableBlackListedApps"];
+
+	if(enableBlackListedApps)
+		blackListedApps = [SparkAppList getAppListForIdentifier: @"com.johnzaro.bluetoothbatteryinfoprefs.blackListedApps" andKey: @"blackListedApps"];
+	else
+		blackListedApps = nil;
 
 	if(bluetoothBatteryInfoObject)
 	{
@@ -682,6 +723,7 @@ static void settingsChanged(CFNotificationCenterRef center, void *observer, CFSt
 			@"landscapeX": @735,
 			@"landscapeY": @32,
 			@"followDeviceOrientation": @NO,
+			@"enableBlackListedApps": @NO
     	}];
 
 		settingsChanged(NULL, NULL, NULL, NULL, NULL);
