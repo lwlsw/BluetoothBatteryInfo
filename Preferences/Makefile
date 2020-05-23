@@ -9,7 +9,7 @@ BluetoothBatteryInfoPrefs_INSTALL_PATH = /Library/PreferenceBundles
 BluetoothBatteryInfoPrefs_FRAMEWORKS = UIKit
 BluetoothBatteryInfoPrefs_PRIVATE_FRAMEWORKS = Preferences
 BluetoothBatteryInfoPrefs_CFLAGS = -fobjc-arc -Wno-deprecated-declarations
-BluetoothBatteryInfoPrefs_LIBRARIES += sparkapplist
+BluetoothBatteryInfoPrefs_LIBRARIES += sparkcolourpicker sparkapplist
 BluetoothBatteryInfoPrefs_EXTRA_FRAMEWORKS = Cephei CepheiPrefs
 
 include $(THEOS_MAKE_PATH)/bundle.mk

@@ -1,5 +1,6 @@
 #import "BBIRootListController.h"
 #import "SparkAppListTableViewController.h"
+#import "SparkColourPickerView.h"
 #import "spawn.h"
 
 @implementation BBIRootListController
@@ -96,6 +97,7 @@
             NSFileManager *manager = [NSFileManager defaultManager];
             [manager removeItemAtPath:@"/var/mobile/Library/Preferences/com.johnzaro.bluetoothbatteryinfoprefs.plist" error: nil];
             [manager removeItemAtPath:@"/var/mobile/Library/Preferences/com.johnzaro.bluetoothbatteryinfoprefs.blackListedApps.plist" error: nil];
+            [manager removeItemAtPath:@"/var/mobile/Library/Preferences/com.johnzaro.bluetoothbatteryinfoprefs.colors.plist" error: nil];
 
             [self respring];
         }];
