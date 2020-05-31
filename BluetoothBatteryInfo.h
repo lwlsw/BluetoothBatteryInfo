@@ -17,21 +17,26 @@
     UIImageView *glyphImageView;
     UILabel *percentageLabel;
     UILabel *deviceNameLabel;
-    BOOL useOriginalGlyph;
     BCBatteryDevice *currentDevice;
     NSString *currentDeviceIdentifier;
-    UIColor *backupColor;
-    UIDeviceOrientation deviceOrientation;
+    UIColor *backupForegroundColor;
+    UIColor *backupBackgroundColor;
 }
 - (id)init;
-- (void)updateLabelsSize;
-- (void)updateGlyphSize;
-- (void)updateLabelProperties;
+- (void)updateWindowFrameWithAnimation: (BOOL)animation;
+- (void)calculateNewWindowSize;
+- (void)updateLabelsFrame;
+- (void)updateGlyphFrame;
+- (void)updateLabelsFont;
 - (void)updatePercentage;
 - (void)updatePercentageColor;
-- (void)updateOrientation;
-- (void)updateFrame;
+- (void)updateObjectWithNewSettings;
 - (void)updateTextColor: (UIColor*)color;
+- (void)hideIfNeeded;
+@end
+
+@interface UIScreen ()
+- (CGRect)_referenceBounds;
 @end
 
 @interface UIImageAsset ()
@@ -42,8 +47,18 @@
 - (void)_setSecure:(BOOL)arg1;
 @end
 
+@interface SBApplication: NSObject
+-(NSString*)bundleIdentifier;
+@end
+
+@interface SpringBoard: UIApplication
+- (id)_accessibilityFrontMostApplication;
+-(void)frontDisplayDidChange: (id)arg1;
+@end
+
 @interface UIApplication ()
 - (UIDeviceOrientation)_frontMostAppOrientation;
+- (BOOL)launchApplicationWithIdentifier:(id)arg1 suspended:(BOOL)arg2;
 @end
 
 @interface _UIStatusBarStyleAttributes: NSObject
